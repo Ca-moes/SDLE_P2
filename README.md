@@ -1,10 +1,15 @@
-# SDLE Project
+# SDLE Project - dot
 
-SDLE Project for group T&lt;n&gt;G&lt;p&gt;&lt;q&gt;.
+SDLE Project for group T1G16.
 
 Group members:
 
-1. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-2. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-3. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
-4. &lt;first name&gt; &lt;family name&gt; (&lt;email address&gt;)
+1. André Gomes (up201806224@edu.fe.up.pt)
+2. Daniel Silva (up201806524@edu.fe.up.pt)
+3. Luís Marques (up201104354@edu.fe.up.pt)
+4. Rodrigo Reis (up201806534@edu.fe.up.pt)
+
+## Developing
+
+`npm start` Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
