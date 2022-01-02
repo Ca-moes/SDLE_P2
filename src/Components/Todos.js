@@ -12,16 +12,13 @@ export default class Todos extends Component {
     super()
     this.gun = gun.get('todos');
     this.state = {newTodo: '', todos: []}
-    this.gun.on(todos => this.setState({
-        todos: formatTodos(todos)
-      }))
   }
 
-  // componentWillMount() {
-  //   this.gun.on(todos => this.setState({
-  //     todos: formatTodos(todos)
-  //   }))
-  // }
+  componentDidMount(){
+    this.gun.on(todos => this.setState({
+      todos: formatTodos(todos)
+    }))
+  }
 
   add = e => {
     e.preventDefault()
