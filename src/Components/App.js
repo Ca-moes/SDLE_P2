@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Todo from './Todo'
 // import Timeline from './Timeline';
-// import Auth from './Auth';
+import Login from './Login';
+import SignUp from './SignUp';
+
 
 import GUN from 'gun/gun';
 import 'gun/sea';
@@ -17,16 +20,15 @@ class App extends Component {
   
   render() {
     return (
-      <>
-        <h1>Todo</h1>
-        {/* <Todo gun={this.gun}/> */}
-        <hr />
-        {/* <h1>Timeline</h1>
-        <Timeline gun={this.gun}/> */}
-        {/* <hr />
-        <h1>Auth</h1>
-        <Auth gun={this.gun} user={this.user}/> */}
-      </>
+      <BrowserRouter>
+      <Routes>
+        <Route>
+          <Route index element={<Login gun={this.gun} user={this.user}/>} />
+          <Route path="/signup" element={<SignUp gun={this.gun} user={this.user}/>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+
     );
   }
 }
