@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import App from './Components/App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
+import "gun/lib/open";
+require('gun/sea');
 
 ReactDOM.render(
   <React.StrictMode>

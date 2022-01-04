@@ -1,40 +1,32 @@
 import React, { Component } from 'react'
-// import Gun from 'gun/gun'
-import Todos from './Todos'
-import Chat from './Chat'
-import Json from './Json'
-import Todo from './Todo'
+// import Todo from './Todo'
+// import Timeline from './Timeline';
+// import Auth from './Auth';
 
-const GUN = require('gun');
-
+import GUN from 'gun/gun';
+import 'gun/sea';
 
 class App extends Component {
   constructor() {
     super();
-    // 
     this.gun = GUN({file:'db/data.json'})
+    this.user = this.gun.user()
     window.gun = this.gun; //To have access to gun object in browser console
+    window.user = this.user
   }
   
   render() {
     return (
-      <div>
-        <h1>React Examples</h1>
-        {/* <h2>Todo</h2>
-        <Todos gun={this.gun} />
-        <br />
-        <hr /> 
-        <h2>Chat</h2>
-        <Chat gun={this.gun} />
-        <br />
+      <>
+        <h1>Todo</h1>
+        {/* <Todo gun={this.gun}/> */}
         <hr />
-        <h2>Json</h2>
-        <Json gun={this.gun} />
-        <br />
-        <hr /> */}
-        <h2>Todo v2</h2>
-        <Todo gun={this.gun}/>
-      </div>
+        {/* <h1>Timeline</h1>
+        <Timeline gun={this.gun}/> */}
+        {/* <hr />
+        <h1>Auth</h1>
+        <Auth gun={this.gun} user={this.user}/> */}
+      </>
     );
   }
 }
