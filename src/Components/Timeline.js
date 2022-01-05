@@ -6,21 +6,21 @@ function Timeline({ gun }) {
 
   useEffect(() => {
     gun.get('todos').on((data) => {
-      const ids = Object.keys(data).filter((item) => item !== '_');
-      console.log(ids);
+      const values = Object.values(data).filter((item) => item !== null).map((item) => {
+        const val = Object.values(item);
+        return val.length === 1 ? val[0] : '';
+      }).filter((item) => item !== '');
+      
       let value;
       let time;
       
-      const new_items = ids.map((item) => {
-        gun.get("todos/"+item, (ack) => {
-          console.log(ack.put);
+      const new_items = values.map((item) => {
+        gun.get(item, (ack) => {
           value = ack.put.value;
           time = ack.put.time;
         });
         return ({'value': value, 'time': time});
       });
-      
-      console.log(new_items);
       
       setItems(new_items);
     });
@@ -33,12 +33,12 @@ function Timeline({ gun }) {
   const add = () => {
     const value = inputRef.current.value;
     const time = Date.now();
-    gun.get("todos").get(time.toString()).put({value, time})
+    gun.get("todos").get(time).put({value, time})
     inputRef.current.value = "";
   }
 
-  const handleDelete = (id) => {
-    gun.get("todos").get(id).put(null)
+  const handleDelete = (time) => {
+    gun.get("todos").get(time).put(null);
   }
 
   return (
