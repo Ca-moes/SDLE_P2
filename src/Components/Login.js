@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Form, FormGroup, Label, Input, Button } from 'reactstrap';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
-function Login({ gun, user }) {
+function Login(props) {
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-
-  useEffect(() => {
-    // user = gun.user().recall({ sessionStorage: true });
-  }, []);
-
-  const login = () => {
-    user.auth(alias, password);
-    if(user.is) console.log('logged in');
+  const login = (e) => {
+    e.preventDefault();
+    props.user.auth(alias, password);
+    if(props.user.is) {
+      console.log('logged in');
+      return navigate("/timeline");
+    } else {
+      console.log("Couldn't log in");
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import {React, useEffect, useState } from "react";
 import { Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
-//import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 
 function SignUp({ gun, user }) {
@@ -9,7 +9,7 @@ function SignUp({ gun, user }) {
 
   const [alert, setAlert] = useState({active:false, message:'', type:''});
 
-  //const navigator = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     user = gun.user().recall({ sessionStorage: true });
@@ -20,6 +20,13 @@ function SignUp({ gun, user }) {
     user.create(alias, password, (ack)=>{
         if(ack.ok == 0){
             setAlert({active:true, message:'User created sucessfully!', type:"success"})
+            gun.user().auth(alias, password);
+            if(gun.user().is) {
+              console.log('logged in');
+              return navigate("/timeline");
+            } else {
+              console.log("Couldn't log in");
+            }
         }
         else if(ack.err != null){
             setAlert({active:true, message:ack.err, type:"danger"})
