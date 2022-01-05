@@ -8,7 +8,7 @@ function Login({ gun, user }) {
 
 
   useEffect(() => {
-    user = gun.user().recall({ sessionStorage: true });
+    // user = gun.user().recall({ sessionStorage: true });
   }, []);
 
   const login = () => {
@@ -26,7 +26,7 @@ function Login({ gun, user }) {
           </Label>
           <Input
             id="alias" 
-            innerRef={(input) => setAlias(input)}
+            onChange={(input) => setAlias(input.target.value)}
             placeholder="username"
             name="alias"
             type="text"
@@ -38,7 +38,7 @@ function Login({ gun, user }) {
           </Label>
           <Input
             id="pass"
-            innerRef={(input) => setPassword(input)}
+            onChange={(input) => setPassword(input.target.value)}
             type="password"
             placeholder="passphrase"
             name="password"

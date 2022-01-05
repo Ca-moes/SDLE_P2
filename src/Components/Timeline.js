@@ -5,22 +5,35 @@ function Timeline({ gun }) {
   const inputRef = useRef()
 
   useEffect(() => {
-    gun.get('todos_set').open((data) => {
-      const initial_items = Object.values(data)
-        .filter((item) => !!item);
-
-      setItems(initial_items);
+    gun.get('todos').on((data) => {
+      const ids = Object.keys(data).filter((item) => item !== '_');
+      console.log(ids);
+      let value;
+      let time;
+      
+      const new_items = ids.map((item) => {
+        gun.get("todos/"+item, (ack) => {
+          console.log(ack.put);
+          value = ack.put.value;
+          time = ack.put.time;
+        });
+        return ({'value': value, 'time': time});
+      });
+      
+      console.log(new_items);
+      
+      setItems(new_items);
     });
-
+    
     return () => {
       gun.get('todos').off();
     }
   }, [])
 
   const add = () => {
-    const name = inputRef.current.value;
-    const randomId = `id_${Date.now()}`;
-    gun.get("todos").set({ name, id: randomId });
+    const value = inputRef.current.value;
+    const time = Date.now();
+    gun.get("todos").get(time.toString()).put({value, time})
     inputRef.current.value = "";
   }
 
@@ -37,9 +50,9 @@ function Timeline({ gun }) {
       <br />
       <ul>
         {items.map((item) => (
-          <li key={item.id}>
-            {item.name} ({item.id})
-            <button onClick={() => handleDelete(item.id)}>Del</button>
+          <li key={item.time}>
+            {item.value} ({item.time})
+            <button onClick={() => handleDelete(item.time)}>Del</button>
           </li>
         ))}
       </ul>
