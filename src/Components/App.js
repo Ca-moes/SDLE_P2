@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Todo from './Todo'
-// import Timeline from './Timeline';
 import Login from './Login';
 import SignUp from './SignUp';
 import Timeline from './Timeline'
