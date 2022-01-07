@@ -1,27 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import React, { useState } from "react";
+import { Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 
-function Login(props) {
+function Login({user}) {
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const login = (e) => {
-    e.preventDefault();
-    props.user.auth(alias, password);
-    if(props.user.is) {
-      console.log('logged in');
-      return navigate("/timeline");
-    } else {
-      console.log("Couldn't log in");
-    }
+  const [alert, setAlert] = useState({active:false, message:'', type:''});
+
+  const login = () => {
+
+    user.auth(alias, password, (ack) => {
+      if(!ack.err) {
+        return navigate("/timeline");
+      }else{
+        setAlert({active:true, message:ack.err, type:"danger"})
+      }
+    });
+    
   };
 
   return (
     <div className="container mt-4">
       <h1>Login</h1>
+      {   
+            alert.active ? <Alert color={`${alert.type}`}>
+            {alert.message}
+            </Alert> : null
+        }
       <Form>
         <FormGroup>
           <Label for="exampleEmail">

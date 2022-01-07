@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getOwnPubKey } from "../utils";
 import Follow from './Follow';
+import { Button } from "reactstrap";
+import { useNavigate } from "react-router";
 
-function Timeline({ gun }) {
+function Timeline({ gun, user }) {
   const [items, setItems] = useState([]);
   const inputRef = useRef()
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     gun.get(getOwnPubKey(gun)).get('timeline').on((data) => {
@@ -27,9 +31,6 @@ function Timeline({ gun }) {
       setItems(new_items);
     });
     
-    return () => {
-      gun.get(getOwnPubKey(gun)).get('timeline').off();
-    }
   }, [])
 
   const add = () => {
@@ -43,23 +44,40 @@ function Timeline({ gun }) {
     gun.get(getOwnPubKey(gun)).get('timeline').get(time).put(null);
   }
 
+  const logout = () => {
+    gun.get(getOwnPubKey(gun)).get('timeline').off();
+    user.leave();
+    if(!user.sea){
+      return navigate("/");
+    }
+      
+  }
+
   return (
     <>
-      <Follow gun={gun}/>
-      <div>
-        <label>Timeline</label>
-        <input ref={inputRef} />
-        <button onClick={add}>Add</button>
+    <Follow gun={gun}/>
+    <div className="container mt-4">
+      <h1>Items list</h1>
+      <div className="d-flex flex-row justify-content-between align-items-start">
+        <div>
+          <div>
+            <input ref={inputRef} />
+            <button onClick={add}>Add</button>
+          </div>
+          <ul>
+            {items.map((item) => (
+              <li key={item.time}>
+                {item.value} ({item.time})
+                <button onClick={() => handleDelete(item.time)}>Del</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Button color="danger" onClick={logout}>
+            Logout
+        </Button>
       </div>
-      <br />
-      <ul>
-        {items.map((item) => (
-          <li key={item.time}>
-            {item.value} ({item.time})
-            <button onClick={() => handleDelete(item.time)}>Del</button>
-          </li>
-        ))}
-      </ul>
+    </div>
     </>
   );
 }
