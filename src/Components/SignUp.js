@@ -1,6 +1,7 @@
 import {React, useEffect, useState } from "react";
 import { Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import { useNavigate } from 'react-router';
+import { getOwnPubKey, getUserPubKey } from "../utils";
 
 
 function SignUp({ gun, user }) {

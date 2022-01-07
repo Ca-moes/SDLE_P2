@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import { getOwnPubKey } from "../utils";
 
 function Timeline({ gun }) {
   const [items, setItems] = useState([]);
   const inputRef = useRef()
 
   useEffect(() => {
-    gun.get('todos').on((data) => {
+    gun.get(getOwnPubKey(gun)).get('timeline').on((data) => {
       const values = Object.values(data).filter((item) => item !== null).map((item) => {
         const val = Object.values(item);
         return val.length === 1 ? val[0] : '';
@@ -26,19 +27,19 @@ function Timeline({ gun }) {
     });
     
     return () => {
-      gun.get('todos').off();
+      gun.get(getOwnPubKey(gun)).get('timeline').off();
     }
   }, [])
 
   const add = () => {
     const value = inputRef.current.value;
     const time = Date.now();
-    gun.get("todos").get(time).put({value, time})
+    gun.get(getOwnPubKey(gun)).get('timeline').get(time).put({value, time})
     inputRef.current.value = "";
   }
 
   const handleDelete = (time) => {
-    gun.get("todos").get(time).put(null);
+    gun.get(getOwnPubKey(gun)).get('timeline').get(time).put(null);
   }
 
   return (
