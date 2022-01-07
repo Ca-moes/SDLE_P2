@@ -11,7 +11,7 @@ import 'gun/sea';
 class App extends Component {
   constructor() {
     super();
-    this.gun = GUN({file:'db/data.json'})
+    this.gun = GUN({file:'db/data.json', peers: ['https://sdle-relay.herokuapp.com/gun']});
     this.user = this.gun.user()
     window.gun = this.gun; //To have access to gun object in browser console
     window.user = this.user

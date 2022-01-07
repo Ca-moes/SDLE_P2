@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getOwnPubKey } from "../utils";
+import Follow from './Follow';
 import { Button } from "reactstrap";
 import { useNavigate } from "react-router";
 
@@ -24,7 +25,7 @@ function Timeline({ gun, user }) {
           value = ack.put.value;
           time = ack.put.time;
         });
-        return ({'value': value, 'time': time});
+        return ({value, time});
       });
       
       setItems(new_items);
@@ -53,6 +54,8 @@ function Timeline({ gun, user }) {
   }
 
   return (
+    <>
+    <Follow gun={gun}/>
     <div className="container mt-4">
       <h1>Items list</h1>
       <div className="d-flex flex-row justify-content-between align-items-start">
@@ -74,8 +77,8 @@ function Timeline({ gun, user }) {
             Logout
         </Button>
       </div>
-    
     </div>
+    </>
   );
 }
 
