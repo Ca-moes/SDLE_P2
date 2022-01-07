@@ -1,13 +1,13 @@
-export function getUserPubKey(gun, alias) {
-    let key = '';
+export async function getUserPubKey(gun, alias) {
     
     gun.get('users/'+alias, (ack) => {
         console.log(ack);
-        key = ack.put.pubKey;
+        if (ack.put === undefined) {
+            return null;
+        } else {
+            return ack.put.pubKey;
+        }
     });
-    
-    
-    return key;
 }
 
 export function getOwnPubKey(gun) {
