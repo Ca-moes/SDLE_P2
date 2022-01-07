@@ -20,7 +20,8 @@ function SignUp({ gun, user }) {
 
     user.create(alias, password, (ack)=>{
         if(ack.ok == 0){
-            setAlert({active:true, message:'User created sucessfully!', type:"success"})
+            setAlert({active:true, message:'User created sucessfully!', type:"success"});
+            gun.get('users').get(alias).put({alias, pubKey: getOwnPubKey(gun)});
             gun.user().auth(alias, password);
             if(gun.user().is) {
               console.log('logged in');

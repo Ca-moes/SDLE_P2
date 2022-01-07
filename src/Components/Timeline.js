@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getOwnPubKey } from "../utils";
+import Follow from './Follow';
 
 function Timeline({ gun }) {
   const [items, setItems] = useState([]);
@@ -20,7 +21,7 @@ function Timeline({ gun }) {
           value = ack.put.value;
           time = ack.put.time;
         });
-        return ({'value': value, 'time': time});
+        return ({value, time});
       });
       
       setItems(new_items);
@@ -44,7 +45,9 @@ function Timeline({ gun }) {
 
   return (
     <>
+      <Follow gun={gun}/>
       <div>
+        <label>Timeline</label>
         <input ref={inputRef} />
         <button onClick={add}>Add</button>
       </div>
