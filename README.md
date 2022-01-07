@@ -17,3 +17,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 Gun Stores its data in the [browser Local Storage](https://ui.vision/howto/view-local-storage), in the file specified in the Gun constructor.
 
 This data can be passed to `./src/Assets/gun_data.json` before a commit to share the state of a node. To retrive the state, this data needs to be copied manually into the browser Local Storage.
+
+## Running
+
+Run relay server with `npm run server [port]`. The port is not necessary, defaulting to 8765 if not present.
