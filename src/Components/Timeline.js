@@ -16,8 +16,7 @@ function Timeline({ gun, user }) {
           .get(`~${user.is.pub}`)
           .get("timeline")
           .get(node_id, (ack) => ack.put);
-        if (node != null)
-          items.push({ value: node.value, time: node.time });
+        if (node != null) items.push({ value: node.value, time: node.time });
       }
       setItems(items);
     }
@@ -26,16 +25,8 @@ function Timeline({ gun, user }) {
       .get(`~${user.is.pub}`)
       .get("timeline")
       .on((data) => {
-        let nodes = Object.entries(data)
-          .filter((item) => item[0] != "_")
-          .map((item) => item[0]);
-
-        get_items(nodes);
+        get_items(Object.keys(data._[">"]));
       });
-
-    return () => {
-      gun.get(`~${user.is.pub}`).get("timeline").off();
-    };
   }, []);
 
   const add = () => {
@@ -50,6 +41,7 @@ function Timeline({ gun, user }) {
   };
 
   const logout = () => {
+    gun.get(`~${user.is.pub}`).get("followed").off();
     gun.get(`~${user.is.pub}`).get("timeline").off();
     user.leave();
     if (user._.sea) {
