@@ -21,3 +21,9 @@ This data can be passed to `./src/Assets/gun_data.json` before a commit to share
 ## Running
 
 Run relay server with `npm run server [port]`. The port is not necessary, defaulting to 8765 if not present.
+
+**Restart everything:**
+- Shutdown `npm start`'s, then shutdown relay
+- `sessionStorage.clear(); localStorage.clear();` on peers
+- close peers browser windows
+- `npm run serverclean`

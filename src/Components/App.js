@@ -11,8 +11,9 @@ import 'gun/sea';
 class App extends Component {
   constructor() {
     super();
-    this.gun = GUN({file:'db/data.json', peers: [`http://localhost:8765/gun`]});
-    this.user = this.gun.user()
+    // this.gun = GUN({file:'db/data.json', peers: [`http://localhost:8765/gun`]});
+    this.gun = GUN({file:'db/data.json'});
+    this.user = this.gun.user().recall({sessionStorage: true});
     window.gun = this.gun; //To have access to gun object in browser console
     window.user = this.user
   }
@@ -28,7 +29,6 @@ class App extends Component {
         </Route>
       </Routes>
     </BrowserRouter>
-
     );
   }
 }

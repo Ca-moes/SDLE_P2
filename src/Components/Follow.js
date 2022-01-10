@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { getUserPubKey, getOwnPubKey } from "../utils";
+import { getUserPubKey } from "../utils";
 import { Alert } from "reactstrap";
 
-function Follow({ gun }) {
+function Follow({ gun, user }) {
   const [followed, setFollowed] = useState([]);
   const followInputRef = useRef();
   const [alert, setAlert] = useState({active:false, message:'', type:''});
 
   useEffect(() => {
-    gun.get(getOwnPubKey(gun)).get('followed').on((data) => {
+    gun.get(`~${user.is.pub}`).get('followed').on((data) => {
         const values = Object.values(data).filter((item) => item !== null).map((item) => {
             const val = Object.values(item);
             return val.length === 1 ? val[0] : '';
@@ -29,7 +29,7 @@ function Follow({ gun }) {
     });
     
     return () => {
-      gun.get(getOwnPubKey(gun)).get('followed').off();
+      gun.get(`~${user.is.pub}`).get('followed').off();
     }
   }, [])
 
@@ -45,7 +45,7 @@ function Follow({ gun }) {
           } else {
             setAlert({active:false, message:'', type:''});
             const value = ack.put.pubKey;
-            gun.get(getOwnPubKey(gun)).get('followed').get(alias).put({value, alias});
+            gun.get(`~${user.is.pub}`).get('followed').get(alias).put({value, alias});
           }
         });
       } else {
@@ -58,7 +58,7 @@ function Follow({ gun }) {
   }
 
   const handleDelete = (alias) => {
-    gun.get(getOwnPubKey(gun)).get('followed').get(alias).put(null);
+    gun.get(`~${user.is.pub}`).get('followed').get(alias).put(null);
   }
 
   return (
