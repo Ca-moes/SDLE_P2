@@ -1,42 +1,36 @@
 import React, { useState } from "react";
-import { Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router';
+import { Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router";
 
-function Login({user}) {
+export default function Login({ user }) {
   const [alias, setAlias] = useState("");
   const [password, setPassword] = useState("");
+  const [alert, setAlert] = useState({ active: false, message: "", type: "" });
   const navigate = useNavigate();
 
-  const [alert, setAlert] = useState({active:false, message:'', type:''});
-
   const login = () => {
-
     user.auth(alias, password, (ack) => {
-      if(!ack.err) {
+      if ("err" in ack) {
+        setAlert({ active: true, message: ack.err, type: "danger" });
+      } else {
+        console.log("Logged in: ", ack);
         return navigate("/timeline");
-      }else{
-        setAlert({active:true, message:ack.err, type:"danger"})
       }
     });
-    
   };
 
   return (
     <div className="container mt-4">
       <h1>Login</h1>
-      {   
-            alert.active ? <Alert color={`${alert.type}`}>
-            {alert.message}
-            </Alert> : null
-        }
+      {alert.active ? (
+        <Alert color={`${alert.type}`}>{alert.message}</Alert>
+      ) : null}
       <Form>
         <FormGroup>
-          <Label for="exampleEmail">
-            Username
-          </Label>
+          <Label for="exampleEmail">Username</Label>
           <Input
-            id="alias" 
+            id="alias"
             onChange={(input) => setAlias(input.target.value)}
             placeholder="username"
             name="alias"
@@ -44,9 +38,7 @@ function Login({user}) {
           />
         </FormGroup>
         <FormGroup>
-          <Label for="examplePassword">
-            Password
-          </Label>
+          <Label for="examplePassword">Password</Label>
           <Input
             id="pass"
             onChange={(input) => setPassword(input.target.value)}
@@ -55,71 +47,11 @@ function Login({user}) {
             name="password"
           />
         </FormGroup>
-        <Button onClick={login}>
-          Sign In
-        </Button>
+        <Button onClick={login}>Sign In</Button>
         <Link className="m-2 btn btn-primary" to="/signup">
           Sign Up
         </Link>
       </Form>
     </div>
-);
-
+  );
 }
-
-export default Login;
-
-// ToDo Pôr o que está abaixo para React
-{
-  /* <script>
-var gun = gun = GUN(location.origin + '/gun');
-var user = gun.user().recall({sessionStorage: true});
-
-$('#up').on('click', function(e){
-  user.create($('#alias').val(), $('#pass').val(), login);
-});
-function login(e){
-  user.auth($('#alias').val(), $('#pass').val());
-  return false; // e.preventDefault();
-};
-$('#sign').on('submit', login);
-$('#mask').on('click', login);
-
-gun.on('auth', function(){
-  $('#sign').hide();
-  user.get('said').map().on(UI);
-});
-
-$('#said').on('submit', function(e){
-  e.preventDefault();
-  //if(!user.is){ return }
-  user.get('said').set($('#say').val());
-  $('#say').val("");
-});
-
-function UI(say, id){
-  var li = $('#' + id).get(0) || $('<li>').attr('id', id).appendTo('ul');
-  $(li).text(say);
-};
-</script> */
-}
-
-{/*<form id="sign">
-        <input id="alias" ref={inputAlias} placeholder="username" />
-        <input
-          id="pass"
-          ref={inputPass}
-          type="password"
-          placeholder="passphrase"
-        />
-        <input id="up" type="button" value="sign up" onClick={handleUp} />
-        <input id="mask" type="button" value="Identifi Login" />
-      </form>
-
-      <ul></ul>
-
-      <form id="said">
-        <input id="say" />
-        <input id="speak" type="submit" value="speak" />
-      </form>
-    </div>*/}

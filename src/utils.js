@@ -9,7 +9,3 @@ export async function getUserPubKey(gun, alias) {
         }
     });
 }
-
-export function getOwnPubKey(gun) {
-    return '~' + gun.user().is.pub;
-}
