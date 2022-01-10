@@ -12,9 +12,12 @@ function Timeline({ gun, user }) {
     async function get_items(nodes) {
       let items = [];
       for (let node_id of nodes) {
-        let node = await gun.get(node_id);
-        console.log(node)
-        items.push({ value: node.value, time: node.time });
+        let node = await gun
+          .get(`~${user.is.pub}`)
+          .get("timeline")
+          .get(node_id, (ack) => ack.put);
+        if (node != null)
+          items.push({ value: node.value, time: node.time });
       }
       setItems(items);
     }
@@ -25,25 +28,25 @@ function Timeline({ gun, user }) {
       .on((data) => {
         let nodes = Object.entries(data)
           .filter((item) => item[0] != "_")
-          .map((item) => item[1]["#"]);
+          .map((item) => item[0]);
 
         get_items(nodes);
       });
+
+    return () => {
+      gun.get(`~${user.is.pub}`).get("timeline").off();
+    };
   }, []);
 
   const add = () => {
     const value = inputRef.current.value;
     const time = Date.now();
-    gun
-      .get(`~${user.is.pub}`)
-      .get("timeline")
-      .get(time)
-      .put({ value, time });
+    gun.get(`~${user.is.pub}`).get("timeline").get(time).put({ value, time });
     inputRef.current.value = "";
   };
 
   const handleDelete = (time) => {
-    gun.get(`~${user.is.pub}/timeline/${time}`).put(null);
+    gun.get(`~${user.is.pub}`).get("timeline").get(time).put(null);
   };
 
   const logout = () => {
