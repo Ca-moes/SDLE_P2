@@ -20,7 +20,7 @@ function SignUp({ gun, user }) {
           type: "success",
         });
 
-        gun.get("users").get(alias).put({ alias, pubKey: ack.pub });
+        gun.get("users").get(alias).put(ack.pub);
 
         user.auth(alias, password, (ack_2) => {
           if ("err" in ack_2) {
