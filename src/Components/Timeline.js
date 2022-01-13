@@ -4,35 +4,39 @@ import { Button } from "reactstrap";
 import { useNavigate } from "react-router";
 
 function Timeline({ gun, user }) {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState({});
   const inputRef = useRef();
   const navigate = useNavigate();
+  let ev = null;
+
+  const handler = (value, key, _msg, _ev) => {
+    let new_items = {};
+    Object.entries(value)
+      .filter((item) => item[0] != "_")
+      .forEach((item) => {
+        if (item[1] != null)
+          new_items[item[0]] = item[1]
+      });
+
+    ev = _ev;
+    console.log("newitems", new_items)
+    setItems(new_items);
+  };
 
   useEffect(() => {
-    async function get_items(nodes) {
-      let items = [];
-      for (let node_id of nodes) {
-        let node = await gun
-          .get(`~${user.is.pub}`)
-          .get("timeline")
-          .get(node_id, (ack) => ack.put);
-        if (node != null) items.push({ value: node.value, time: node.time });
-      }
-      setItems(items);
-    }
+    console.log("Em use effect, subscreveu");
+    gun.get(`~${user.is.pub}`).get("timeline").on(handler);
 
-    gun
-      .get(`~${user.is.pub}`)
-      .get("timeline")
-      .on((data) => {
-        get_items(Object.keys(data._[">"]));
-      });
+    return () => {
+      console.log("Off no return do useEffect");
+      ev.off();
+    };
   }, []);
 
   const add = () => {
     const value = inputRef.current.value;
     const time = Date.now();
-    gun.get(`~${user.is.pub}`).get("timeline").get(time).put({ value, time });
+    gun.get(`~${user.is.pub}`).get("timeline").get(time).put(value);
     inputRef.current.value = "";
   };
 
@@ -41,7 +45,7 @@ function Timeline({ gun, user }) {
   };
 
   const logout = () => {
-    gun.get(`~${user.is.pub}`).get("followed").off();
+    console.log("Off no logout");
     gun.get(`~${user.is.pub}`).get("timeline").off();
     user.leave();
     if (user._.sea) {
@@ -63,10 +67,10 @@ function Timeline({ gun, user }) {
               <button onClick={add}>Add</button>
             </div>
             <ul>
-              {items.map((item) => (
-                <li key={item.time}>
-                  {item.value} ({item.time})
-                  <button onClick={() => handleDelete(item.time)}>Del</button>
+              {Object.keys(items).map((key) => (
+                <li key={key}>
+                  {items[key]} ({key})
+                  <button onClick={() => handleDelete(key)}>Del</button>
                 </li>
               ))}
             </ul>
