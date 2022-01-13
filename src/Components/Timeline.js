@@ -10,6 +10,7 @@ function Timeline({ gun, user }) {
   let ev = null;
 
   const handler = (value, key, _msg, _ev) => {
+    ev = _ev;
     let new_items = {};
     Object.entries(value)
       .filter((item) => item[0] != "_")
@@ -18,17 +19,12 @@ function Timeline({ gun, user }) {
           new_items[item[0]] = item[1]
       });
 
-    ev = _ev;
-    console.log("newitems", new_items)
     setItems(new_items);
   };
 
   useEffect(() => {
-    console.log("Em use effect, subscreveu");
     gun.get(`~${user.is.pub}`).get("timeline").on(handler);
-
     return () => {
-      console.log("Off no return do useEffect");
       ev.off();
     };
   }, []);
@@ -45,7 +41,6 @@ function Timeline({ gun, user }) {
   };
 
   const logout = () => {
-    console.log("Off no logout");
     gun.get(`~${user.is.pub}`).get("timeline").off();
     user.leave();
     if (user._.sea) {
