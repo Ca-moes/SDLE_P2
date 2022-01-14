@@ -27,7 +27,7 @@ function SignUp({ gun, user }) {
             setAlert({ active: true, message: ack_2.err, type: "danger" });
           } else {
             console.log("Logged in: ", ack_2);
-            return navigate("/timeline");
+            return navigate("/profile");
           }
         });
       } else {
@@ -35,6 +35,11 @@ function SignUp({ gun, user }) {
       }
     });
   };
+
+  useEffect(() => {
+    if (user.is)
+      navigate("/profile");
+  }, [])
 
   return (
     <div className="container mt-4">
