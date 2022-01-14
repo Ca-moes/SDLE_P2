@@ -6,7 +6,7 @@ export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
   const [items, setItems] = useState({});
   const [followed, setFollowed] = useState([]);
-  const [followTimelines, setFollowTimelines] = useState({test: "empty"})
+  const [followTimelines, setFollowTimelines] = useState({})
   const followTimelinesRef = useRef()
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
 
@@ -29,37 +29,41 @@ export default function Profile({ gun, user }) {
         if (item[1] != null) followList[item[0]] = item[1];
       });
     setFollowed(followList);
-    console.log("Now follows:", followList)
     
     let currentFollowTimelines = {...followTimelinesRef.current}
-    console.log("currentFollowTimelines pré fazer coisas", currentFollowTimelines)
     // todo por cada follow em followTimelines, vê se está em new Follow
     // se estiver deixa estar 
     // se não estiver, remove a subscrição
     for (let alias in currentFollowTimelines){
       if (!(alias in followList)){
-        console.log("Going to delete: ", alias)
+        currentFollowTimelines[alias].ev.off()
+        gun.get(`~${followList[alias]}`).get("timeline").off()
         delete currentFollowTimelines[alias]
+        setFollowTimelines(currentFollowTimelines)
       }
     }
 
-    // TODO por cada follower em newFollow, vê se tem uma entrada em followTimeLines
+    // Por cada follower em newFollow, vê se tem uma entrada em followTimeLines
     // se tiver, não faz nada
     // se não tiver, adiciona uma subscrição à timeline
-    let newFollows = {}
     for (let alias in followList){
-      if (!(alias in followTimelines))
-        newFollows = {...newFollows, ...{[alias]: 'test'}}
+      if (!(alias in currentFollowTimelines)){
+        gun.get(`~${followList[alias]}`).get("timeline").on(
+          (value, key, _msg, _ev) => {
+            let new_items = {};
+            Object.entries(value)
+              .filter((item) => item[0] != "_")
+              .forEach((item) => {
+                if (item[1] != null)
+                  new_items[item[0]] = item[1]
+              });
+            let newFollowTimelines = {...followTimelinesRef.current, ...{[alias]: {ev: _ev, items: new_items}}}
+            setFollowTimelines(newFollowTimelines)
+          }
+        )
+      }
     }
-    
-    currentFollowTimelines = {...currentFollowTimelines, ...newFollows}
-    console.log("Novo currentFollowTimelines no final", currentFollowTimelines)
-    setFollowTimelines(currentFollowTimelines)
   };
-
-  useEffect(() => {
-    console.log("após atualizar valor:", followTimelines)
-  }, [followTimelines])
 
   const handlerTimeline = (value, key, _msg, _ev) => {
     ev_own = _ev;
@@ -133,11 +137,10 @@ export default function Profile({ gun, user }) {
     gun.user().once((data) => setCurrAlias(data.alias));
     gun.get(`~${user.is.pub}`).get("timeline").on(handlerTimeline); // get current messages and sub to updates
     gun.get(`~${user.is.pub}`).get("follows").on(handlerFollowList);
-
     return () => {
       ev_own.off();
       ev_followList.off();
-      // todo remove (.off()) todas as subscrições às timelines de outros
+      Object.values(followTimelines).forEach(item => item.ev.off())
     };
   }, []);
 
