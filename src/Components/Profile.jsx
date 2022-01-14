@@ -6,7 +6,8 @@ export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
   const [items, setItems] = useState({});
   const [followed, setFollowed] = useState([]);
-  const [followTimelines, setFollowTimelines] = useState({})
+  const [followTimelines, setFollowTimelines] = useState({test: "empty"})
+  const followTimelinesRef = useRef()
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
 
   const timelineInputRef = useRef();
@@ -16,6 +17,7 @@ export default function Profile({ gun, user }) {
 
   let ev_own = null;
   let ev_followList = null;
+  followTimelinesRef.current = followTimelines
 
   // Tratará de adicionar ou retirar subscrições a quem está followed
   const handlerFollowList = (value, key, _msg, _ev) => {
@@ -29,8 +31,7 @@ export default function Profile({ gun, user }) {
     setFollowed(followList);
     console.log("Now follows:", followList)
     
-    console.log("followTimelines pré fazer coisas", followTimelines)
-    let currentFollowTimelines = {...followTimelines}
+    let currentFollowTimelines = {...followTimelinesRef.current}
     console.log("currentFollowTimelines pré fazer coisas", currentFollowTimelines)
     // todo por cada follow em followTimelines, vê se está em new Follow
     // se estiver deixa estar 
