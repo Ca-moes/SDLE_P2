@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './Login';
 import SignUp from './SignUp';
-import Timeline from './Timeline'
 import Profile from './Profile';
 
 

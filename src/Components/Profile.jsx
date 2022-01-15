@@ -4,10 +4,10 @@ import { useNavigate } from "react-router";
 
 export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
-  const [items, setItems] = useState({});
+  const [items, setItems] = useState({}); // {1234: 'item1', 5678: 'item2'}
   const [followed, setFollowed] = useState([]);
-  const [followTimelines, setFollowTimelines] = useState({})
-  const followTimelinesRef = useRef()
+  const [followTimelines, setFollowTimelines] = useState({}); // {alias : { ev: _ev, items: {1234: 'item1', 5678: 'item2'}}}
+  const followTimelinesRef = useRef();
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
 
   const timelineInputRef = useRef();
@@ -17,51 +17,54 @@ export default function Profile({ gun, user }) {
 
   let ev_own = null;
   let ev_followList = null;
-  followTimelinesRef.current = followTimelines
+  followTimelinesRef.current = followTimelines;
 
-  // Tratará de adicionar ou retirar subscrições a quem está followed
   const handlerFollowList = (value, key, _msg, _ev) => {
+    console.log("Em callback handlerFollowList");
     ev_followList = _ev;
     let followList = {};
-    Object.entries(value)
-      .filter((item) => item[0] != "_")
+    let valueCopy = { ...value };
+    Object.entries(valueCopy)
+      .filter((item) => item[0] !== "_")
       .forEach((item) => {
-        if (item[1] != null) followList[item[0]] = item[1];
+        if (item[1] !== null) followList[item[0]] = item[1];
       });
     setFollowed(followList);
-    
-    let currentFollowTimelines = {...followTimelinesRef.current}
-    // todo por cada follow em followTimelines, vê se está em new Follow
-    // se estiver deixa estar 
-    // se não estiver, remove a subscrição
-    for (let alias in currentFollowTimelines){
-      if (!(alias in followList)){
-        currentFollowTimelines[alias].ev.off()
-        gun.get(`~${followList[alias]}`).get("timeline").off()
-        delete currentFollowTimelines[alias]
-        setFollowTimelines(currentFollowTimelines)
-      }
-    }
+  };
 
-    // Por cada follower em newFollow, vê se tem uma entrada em followTimeLines
-    // se tiver, não faz nada
-    // se não tiver, adiciona uma subscrição à timeline
-    for (let alias in followList){
-      if (!(alias in currentFollowTimelines)){
-        gun.get(`~${followList[alias]}`).get("timeline").on(
-          (value, key, _msg, _ev) => {
-            let new_items = {};
-            Object.entries(value)
-              .filter((item) => item[0] != "_")
-              .forEach((item) => {
-                if (item[1] != null)
-                  new_items[item[0]] = item[1]
-              });
-            let newFollowTimelines = {...followTimelinesRef.current, ...{[alias]: {ev: _ev, items: new_items}}}
-            setFollowTimelines(newFollowTimelines)
-          }
-        )
-      }
+  // Adds subscriptions at beginning
+  const handlerFollowListMessages = (value) => {
+    console.log("Em callback handlerFollowListMessages");
+    let followList = {};
+    Object.entries(value)
+      .filter((item) => item[0] !== "_")
+      .forEach((item) => {
+        if (item[1] !== null) followList[item[0]] = item[1];
+      });
+
+    // With once, might not need to use ref
+    console.log("followList:", followList);
+
+    // Adds a subscription if new alias appears in followList
+    for (let alias in followList) {
+      console.log("Criou subscribe para:", alias);
+      gun
+        .get(`~${followList[alias]}`)
+        .get("timeline")
+        .on((value, key, _msg, _ev) => {
+          console.log("Value em sub", value);
+          let new_items = {};
+          Object.entries(value)
+            .filter((item) => item[0] !== "_")
+            .forEach((item) => {
+              if (item[1] !== null) new_items[item[0]] = item[1];
+            });
+          let newFollowTimelines = {
+            ...followTimelinesRef.current,
+            [alias]: { ev: _ev, items: new_items },
+          };
+          setFollowTimelines(newFollowTimelines);
+        });
     }
   };
 
@@ -69,9 +72,9 @@ export default function Profile({ gun, user }) {
     ev_own = _ev;
     let new_items = {};
     Object.entries(value)
-      .filter((item) => item[0] != "_")
+      .filter((item) => item[0] !== "_")
       .forEach((item) => {
-        if (item[1] != null) new_items[item[0]] = item[1];
+        if (item[1] !== null) new_items[item[0]] = item[1];
       });
 
     setItems(new_items);
@@ -79,7 +82,7 @@ export default function Profile({ gun, user }) {
 
   const addFollower = () => {
     const alias = followInputRef.current.value;
-    if (alias == currAlias) {
+    if (alias === currAlias) {
       setAlert({
         active: true,
         message: "Can't follow yourself",
@@ -102,6 +105,24 @@ export default function Profile({ gun, user }) {
         } else {
           setAlert({ active: false, message: "", type: "" });
           gun.get(`~${user.is.pub}`).get("follows").get(alias).put(ack.put);
+          // add subscription
+          gun
+            .get(`~${ack.put}`)
+            .get("timeline")
+            .on((value, key, _msg, _ev) => {
+              console.log("Value em sub", value);
+              let new_items = {};
+              Object.entries(value)
+                .filter((item) => item[0] !== "_")
+                .forEach((item) => {
+                  if (item[1] !== null) new_items[item[0]] = item[1];
+                });
+              let newFollowTimelines = {
+                ...followTimelinesRef.current,
+                [alias]: { ev: _ev, items: new_items },
+              };
+              setFollowTimelines(newFollowTimelines);
+            });
         }
       });
     }
@@ -110,6 +131,11 @@ export default function Profile({ gun, user }) {
 
   const deleteFollower = (alias) => {
     gun.get(`~${user.is.pub}`).get("follows").get(alias).put(null);
+    // remove subscription
+    followTimelines[alias].ev.off();
+    let tempState = { ...followTimelines };
+    delete tempState[alias];
+    setFollowTimelines(tempState);
   };
 
   const addItem = () => {
@@ -134,13 +160,19 @@ export default function Profile({ gun, user }) {
   };
 
   useEffect(() => {
+    console.log("useEffect de followTimelines", followTimelines)
+  }, [followTimelines])
+
+  useEffect(() => {
+    console.log("Star of useEffect()");
     gun.user().once((data) => setCurrAlias(data.alias));
     gun.get(`~${user.is.pub}`).get("timeline").on(handlerTimeline); // get current messages and sub to updates
+    gun.get(`~${user.is.pub}`).get("follows").once(handlerFollowListMessages);
     gun.get(`~${user.is.pub}`).get("follows").on(handlerFollowList);
     return () => {
       ev_own.off();
       ev_followList.off();
-      Object.values(followTimelines).forEach(item => item.ev.off())
+      Object.values(followTimelines).forEach((item) => item.ev.off());
     };
   }, []);
 
