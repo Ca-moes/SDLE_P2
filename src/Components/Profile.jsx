@@ -34,7 +34,10 @@ export default function Profile({ gun, user }) {
 
   // Adds subscriptions at beginning
   const handlerFollowListMessages = (value) => {
-    console.log("Em callback handlerFollowListMessages");
+    console.log("Em callback handlerFollowListMessages", value);
+    if (value === undefined)
+      return
+
     let followList = {};
     Object.entries(value)
       .filter((item) => item[0] !== "_")
@@ -110,17 +113,20 @@ export default function Profile({ gun, user }) {
             .get(`~${ack.put}`)
             .get("timeline")
             .on((value, key, _msg, _ev) => {
-              console.log("Value em sub", value);
+              console.log("Value em sub???", value);
               let new_items = {};
+              console.log("Value em sub 2", value);
               Object.entries(value)
                 .filter((item) => item[0] !== "_")
                 .forEach((item) => {
                   if (item[1] !== null) new_items[item[0]] = item[1];
                 });
+              console.log("alive?"); 
               let newFollowTimelines = {
                 ...followTimelinesRef.current,
                 [alias]: { ev: _ev, items: new_items },
               };
+              console.log("setFollowTimelines com ", newFollowTimelines);
               setFollowTimelines(newFollowTimelines);
             });
         }
@@ -159,12 +165,23 @@ export default function Profile({ gun, user }) {
     return navigate("/");
   };
 
+  const organizeFollows = (timelines) => {
+    let followItems = []
+    Object.keys(followTimelines).map((alias)=>{
+      Object.keys(followTimelines[alias].items).map((key)=>{
+        followItems.push({alias, key, value: followTimelines[alias].items[key]})
+      })
+    })
+    return followItems
+  }
+
+
   useEffect(() => {
     console.log("useEffect de followTimelines", followTimelines)
   }, [followTimelines])
 
   useEffect(() => {
-    console.log("Star of useEffect()");
+    console.log("Start of useEffect()");
     gun.user().once((data) => setCurrAlias(data.alias));
     gun.get(`~${user.is.pub}`).get("timeline").on(handlerTimeline); // get current messages and sub to updates
     gun.get(`~${user.is.pub}`).get("follows").once(handlerFollowListMessages);
@@ -213,6 +230,14 @@ export default function Profile({ gun, user }) {
                   <button onClick={() => deleteItem(key)}>Del</button>
                 </li>
               ))}
+            </ul>
+            <ul>
+              {organizeFollows(followTimelines).map((entry) => (
+                <li key={entry.key}>
+                  {entry.alias} : {entry.value} ({entry.key})
+                </li>
+              ))}
+
             </ul>
           </div>
           <Button color="danger" onClick={logout}>
