@@ -6,27 +6,27 @@ function Follow({ gun, user }) {
   const [followed, setFollowed] = useState([]);
   const followInputRef = useRef();
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
-  let ev = null;
+  let ev_followList = null;
 
-  const handler = (value, key, _msg, _ev) => {
-    ev = _ev;
+  const followsListHandler = (value, key, _msg, _ev) => {
+    ev_followList = _ev;
     let new_follow = {};
     Object.entries(value)
       .filter((item) => item[0] != "_")
       .forEach((item) => {
         if (item[1] != null) new_follow[item[0]] = item[1];
       });
-    setFollowed(new_follow)
+    setFollowed(new_follow);
   };
 
   useEffect(() => {
-    gun.get(`~${user.is.pub}`).get("followed").on(handler);
+    gun.get(`~${user.is.pub}`).get("follows").on(followsListHandler);
     return () => {
-      ev.off();
+      ev_followList.off();
     };
   }, []);
 
-  const add = () => {
+  const addFollower = () => {
     const alias = followInputRef.current.value;
     if (alias == user.is.alias) {
       setAlert({
@@ -34,8 +34,7 @@ function Follow({ gun, user }) {
         message: "Can't follow yourself",
         type: "danger",
       });
-      // refazer isto abaixo
-    } else if (followed.filter((item) => item.alias === alias).length != 0) {
+    } else if (Object.keys(followed).includes(alias)) {
       setAlert({
         active: true,
         message: "You already follow that user",
@@ -43,7 +42,6 @@ function Follow({ gun, user }) {
       });
     } else {
       gun.get("users").get(alias, (ack) => {
-        console.log(ack);
         if (ack.put === undefined) {
           setAlert({
             active: true,
@@ -52,15 +50,15 @@ function Follow({ gun, user }) {
           });
         } else {
           setAlert({ active: false, message: "", type: "" });
-          gun.get(`~${user.is.pub}`).get("followed").get(alias).put(ack.put);
+          gun.get(`~${user.is.pub}`).get("follows").get(alias).put(ack.put);
         }
       });
     }
     followInputRef.current.value = "";
   };
 
-  const handleDelete = (alias) => {
-    gun.get(`~${user.is.pub}`).get("followed").get(alias).put(null);
+  const deleteFollower = (alias) => {
+    gun.get(`~${user.is.pub}`).get("follows").get(alias).put(null);
   };
 
   return (
@@ -71,14 +69,14 @@ function Follow({ gun, user }) {
         ) : null}
         <label>Followed</label>
         <input ref={followInputRef} />
-        <button onClick={add}>Add</button>
+        <button onClick={addFollower}>Add</button>
       </div>
       <br />
       <ul>
         {Object.keys(followed).map((key) => (
           <li key={followed[key]}>
             {key} ({followed[key]})
-            <button onClick={() => handleDelete(key)}>Del</button>
+            <button onClick={() => deleteFollower(key)}>Del</button>
           </li>
         ))}
       </ul>

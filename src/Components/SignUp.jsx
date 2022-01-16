@@ -1,7 +1,6 @@
 import { React, useEffect, useState } from "react";
 import { Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
 import { useNavigate } from "react-router";
-import { getUserPubKey } from "../utils";
 
 function SignUp({ gun, user }) {
   const [alias, setAlias] = useState("");
@@ -13,7 +12,7 @@ function SignUp({ gun, user }) {
     user.create(alias, password, (ack) => {
       if ("err" in ack) {
         setAlert({ active: true, message: ack.err, type: "danger" });
-      } else if (ack.ok == 0) {
+      } else if (ack.ok === 0) {
         setAlert({
           active: true,
           message: "User created sucessfully!",
@@ -27,7 +26,7 @@ function SignUp({ gun, user }) {
             setAlert({ active: true, message: ack_2.err, type: "danger" });
           } else {
             console.log("Logged in: ", ack_2);
-            return navigate("/timeline");
+            return navigate("/profile");
           }
         });
       } else {
@@ -35,6 +34,11 @@ function SignUp({ gun, user }) {
       }
     });
   };
+
+  useEffect(() => {
+    if (user.is)
+      navigate("/profile");
+  }, [])
 
   return (
     <div className="container mt-4">

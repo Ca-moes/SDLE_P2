@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router";
@@ -14,11 +14,16 @@ export default function Login({ user }) {
       if ("err" in ack) {
         setAlert({ active: true, message: ack.err, type: "danger" });
       } else {
-        console.log("Logged in: ", ack);
-        return navigate("/timeline");
+        return navigate("/profile");
       }
     });
   };
+
+  useEffect(() => {
+    if (user.is) {
+      navigate("/profile");
+    }
+  }, [])
 
   return (
     <div className="container mt-4">
