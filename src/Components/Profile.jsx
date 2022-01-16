@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Alert } from "reactstrap";
 import { useNavigate } from "react-router";
+
+import Alert from 'react-bootstrap/Alert'
+import Button from 'react-bootstrap/Button';
 
 export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
@@ -199,18 +201,18 @@ export default function Profile({ gun, user }) {
 
       <div>
         {alert.active ? (
-          <Alert color={`${alert.type}`}>{alert.message}</Alert>
+          <Alert variant={`${alert.type}`}>{alert.message}</Alert>
         ) : null}
         <label>Followed</label>
         <input ref={followInputRef} />
-        <button onClick={addFollower}>Add</button>
+        <Button onClick={addFollower}>Add</Button>
       </div>
       <br />
       <ul>
         {Object.keys(followed).map((key) => (
           <li key={followed[key]}>
             {key} ({followed[key]})
-            <button onClick={() => deleteFollower(key)}>Del</button>
+            <Button onClick={() => deleteFollower(key)}>Del</Button>
           </li>
         ))}
       </ul>
@@ -221,13 +223,13 @@ export default function Profile({ gun, user }) {
           <div>
             <div>
               <input ref={timelineInputRef} />
-              <button onClick={addItem}>Add</button>
+              <Button onClick={addItem}>Add</Button>
             </div>
             <ul>
               {Object.keys(items).map((key) => (
                 <li key={key}>
                   {items[key]} ({key})
-                  <button onClick={() => deleteItem(key)}>Del</button>
+                  <Button onClick={() => deleteItem(key)}>Del</Button>
                 </li>
               ))}
             </ul>
@@ -240,7 +242,7 @@ export default function Profile({ gun, user }) {
 
             </ul>
           </div>
-          <Button color="danger" onClick={logout}>
+          <Button variant="danger" onClick={logout}>
             Logout
           </Button>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import Follow from "./Follow";
-import { Button } from "reactstrap";
 import { useNavigate } from "react-router";
+
+import Button from 'react-bootstrap/Button';
 
 function Timeline({ gun, user }) {
   const [currAlias, setCurrAlias] = useState('');
@@ -108,18 +109,18 @@ function Timeline({ gun, user }) {
           <div>
             <div>
               <input ref={inputRef} />
-              <button onClick={add}>Add</button>
+              <Button onClick={add}>Add</Button>
             </div>
             <ul>
               {Object.keys(items).map((key) => (
                 <li key={key}>
                   {items[key]} ({key})
-                  <button onClick={() => handleDelete(key)}>Del</button>
+                  <Button onClick={() => handleDelete(key)}>Del</Button>
                 </li>
               ))}
             </ul>
           </div>
-          <Button color="danger" onClick={logout}>
+          <Button variant="danger" onClick={logout}>
             Logout
           </Button>
         </div>

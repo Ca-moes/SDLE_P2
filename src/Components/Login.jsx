@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
+
+import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert'
+import Button from 'react-bootstrap/Button';
+
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router";
 
@@ -29,31 +33,31 @@ export default function Login({ user }) {
     <div className="container mt-4">
       <h1>Login</h1>
       {alert.active ? (
-        <Alert color={`${alert.type}`}>{alert.message}</Alert>
+        <Alert variant={`${alert.type}`}>{alert.message}</Alert>
       ) : null}
       <Form>
-        <FormGroup>
-          <Label for="exampleEmail">Username</Label>
-          <Input
+        <Form.Group className="mb-3">
+          <Form.Label for="exampleEmail">Username</Form.Label>
+          <Form.Control
             id="alias"
             onChange={(input) => setAlias(input.target.value)}
             placeholder="username"
             name="alias"
             type="text"
           />
-        </FormGroup>
-        <FormGroup>
-          <Label for="examplePassword">Password</Label>
-          <Input
+        </Form.Group >
+        <Form.Group className="mb-3">
+          <Form.Label for="examplePassword">Password</Form.Label>
+          <Form.Control
             id="pass"
             onChange={(input) => setPassword(input.target.value)}
             type="password"
             placeholder="passphrase"
             name="password"
           />
-        </FormGroup>
+        </Form.Group>
         <Button onClick={login}>Sign In</Button>
-        <Link className="m-2 btn btn-primary" to="/signup">
+        <Link className="m-2 btn btn-secondary" to="/signup">
           Sign Up
         </Link>
       </Form>

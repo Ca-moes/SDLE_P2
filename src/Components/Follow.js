@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getUserPubKey } from "../utils";
-import { Alert } from "reactstrap";
+import { Alert } from "react-boostrap";
 
 function Follow({ gun, user }) {
   const [followed, setFollowed] = useState([]);

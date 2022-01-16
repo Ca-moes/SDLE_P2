@@ -1,6 +1,9 @@
 import { React, useEffect, useState } from "react";
-import { Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
 import { useNavigate } from "react-router";
+
+import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert'
+import Button from 'react-bootstrap/Button';
 
 function SignUp({ gun, user }) {
   const [alias, setAlias] = useState("");
@@ -44,29 +47,29 @@ function SignUp({ gun, user }) {
     <div className="container mt-4">
       <h1>Create an account</h1>
       {alert.active ? (
-        <Alert color={`${alert.type}`}>{alert.message}</Alert>
+        <Alert variant={`${alert.type}`}>{alert.message}</Alert>
       ) : null}
       <Form>
-        <FormGroup>
-          <Label for="exampleEmail">Username</Label>
-          <Input
+        <Form.Group className="mb-3">
+          <Form.Label for="exampleEmail">Username</Form.Label>
+          <Form.Control
             id="alias"
             placeholder="username"
             name="alias"
             type="text"
             onChange={(input) => setAlias(input.target.value)}
           />
-        </FormGroup>
-        <FormGroup>
-          <Label for="examplePassword">Password</Label>
-          <Input
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label for="examplePassword">Password</Form.Label>
+          <Form.Control
             id="pass"
             type="password"
             placeholder="passphrase"
             name="password"
             onChange={(input) => setPassword(input.target.value)}
           />
-        </FormGroup>
+        </Form.Group>
         <Button onClick={handleUp}>Sign Up</Button>
       </Form>
     </div>
