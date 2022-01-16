@@ -1,25 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
-import Navbar  from "react-bootstrap/Navbar";
-import ButtonGroup from "react-bootstrap/ButtonGroup"
+import Navbar from "react-bootstrap/Navbar";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Container from "react-bootstrap/Container";
-import Alert from 'react-bootstrap/Alert'
-import Button from 'react-bootstrap/Button';
-import Toast from 'react-bootstrap/Toast'
-import ToastBody from 'react-bootstrap/ToastBody'
-import  ToastHeader  from "react-bootstrap/ToastHeader";
-import { Form, Badge } from "react-bootstrap";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Toast from "react-bootstrap/Toast";
+import ToastBody from "react-bootstrap/ToastBody";
+import ToastHeader from "react-bootstrap/ToastHeader";
+import { Form, Badge, ListGroup } from "react-bootstrap";
+import holder from '../../src/Assets/holder.svg'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUserPlus, faDotCircle, faPaperPlane } from '@fortawesome/free-solid-svg-icons'
-
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUserPlus,
+  faDotCircle,
+  faPaperPlane,
+  faUserTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
   const [items, setItems] = useState({}); // {1234: 'item1', 5678: 'item2'}
-  const [followed, setFollowed] = useState([]);
+  const [followed, setFollowed] = useState({});
+  const [toFollow, setToFollow] = useState({});
   const [followTimelines, setFollowTimelines] = useState({}); // {alias : { ev: _ev, items: {1234: 'item1', 5678: 'item2'}}}
   const followTimelinesRef = useRef();
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
@@ -32,6 +37,23 @@ export default function Profile({ gun, user }) {
   let ev_own = null;
   let ev_followList = null;
   followTimelinesRef.current = followTimelines;
+
+  const handlerToFollowList = (ack) => {
+    let toFollowList = {};
+
+    Object.entries(ack)
+      .filter(
+        (item) =>
+          item[0] !== "_" && item[1] !== user.is.pub && !(item[0] in followed)
+      )
+      .forEach((item) => {
+        if (item[1] !== null) toFollowList[item[0]] = item[1];
+      });
+
+    console.log("to", toFollowList);
+
+    setToFollow(toFollowList);
+  };
 
   const handlerFollowList = (value, key, _msg, _ev) => {
     console.log("Em callback handlerFollowList");
@@ -49,8 +71,7 @@ export default function Profile({ gun, user }) {
   // Adds subscriptions at beginning
   const handlerFollowListMessages = (value) => {
     console.log("Em callback handlerFollowListMessages", value);
-    if (value === undefined)
-      return
+    if (value === undefined) return;
 
     let followList = {};
     Object.entries(value)
@@ -97,56 +118,40 @@ export default function Profile({ gun, user }) {
     setItems(new_items);
   };
 
-  const addFollower = () => {
-    const alias = followInputRef.current.value;
-    if (alias === currAlias) {
-      setAlert({
-        active: true,
-        message: "Can't follow yourself",
-        type: "danger",
-      });
-    } else if (Object.keys(followed).includes(alias)) {
-      setAlert({
-        active: true,
-        message: "You already follow that user",
-        type: "danger",
-      });
-    } else {
-      gun.get("users").get(alias, (ack) => {
-        if (ack.put === undefined) {
-          setAlert({
-            active: true,
-            message: "Could't find user",
-            type: "danger",
+  const addFollower = (alias) => {
+    gun.get("users").get(alias, (ack) => {
+      if (ack.put === undefined) {
+        setAlert({
+          active: true,
+          message: "Could't find user",
+          type: "danger",
+        });
+      } else {
+        setAlert({ active: false, message: "", type: "" });
+        gun.get(`~${user.is.pub}`).get("follows").get(alias).put(ack.put);
+        // add subscription
+        gun
+          .get(`~${ack.put}`)
+          .get("timeline")
+          .on((value, key, _msg, _ev) => {
+            console.log("Value em sub???", value);
+            let new_items = {};
+            console.log("Value em sub 2", value);
+            Object.entries(value)
+              .filter((item) => item[0] !== "_")
+              .forEach((item) => {
+                if (item[1] !== null) new_items[item[0]] = item[1];
+              });
+            console.log("alive?");
+            let newFollowTimelines = {
+              ...followTimelinesRef.current,
+              [alias]: { ev: _ev, items: new_items },
+            };
+            console.log("setFollowTimelines com ", newFollowTimelines);
+            setFollowTimelines(newFollowTimelines);
           });
-        } else {
-          setAlert({ active: false, message: "", type: "" });
-          gun.get(`~${user.is.pub}`).get("follows").get(alias).put(ack.put);
-          // add subscription
-          gun
-            .get(`~${ack.put}`)
-            .get("timeline")
-            .on((value, key, _msg, _ev) => {
-              console.log("Value em sub???", value);
-              let new_items = {};
-              console.log("Value em sub 2", value);
-              Object.entries(value)
-                .filter((item) => item[0] !== "_")
-                .forEach((item) => {
-                  if (item[1] !== null) new_items[item[0]] = item[1];
-                });
-              console.log("alive?"); 
-              let newFollowTimelines = {
-                ...followTimelinesRef.current,
-                [alias]: { ev: _ev, items: new_items },
-              };
-              console.log("setFollowTimelines com ", newFollowTimelines);
-              setFollowTimelines(newFollowTimelines);
-            });
-        }
-      });
-    }
-    followInputRef.current.value = "";
+      }
+    });
   };
 
   const deleteFollower = (alias) => {
@@ -160,12 +165,16 @@ export default function Profile({ gun, user }) {
 
   const addItem = () => {
     const value = timelineInputRef.current.value;
-    const time = Date.now();
-    gun.get(`~${user.is.pub}`).get("timeline").get(time).put(value);
-    timelineInputRef.current.value = "";
+
+    if (value != "") {
+      const time = Date.now();
+      gun.get(`~${user.is.pub}`).get("timeline").get(time).put(value);
+      timelineInputRef.current.value = "";
+    }
   };
 
   const deleteItem = (time) => {
+    console.log("apagar", time);
     gun.get(`~${user.is.pub}`).get("timeline").get(time).put(null);
   };
 
@@ -180,24 +189,32 @@ export default function Profile({ gun, user }) {
   };
 
   const organizeFollows = (timelines) => {
-    let followItems = []
-    Object.keys(followTimelines).map((alias)=>{
-      Object.keys(followTimelines[alias].items).map((key)=>{
-        followItems.push({alias, key, value: followTimelines[alias].items[key]})
-      })
-    })
-    return followItems
-  }
+    let followItems = [];
+    Object.keys(followTimelines).map((alias) => {
+      Object.keys(followTimelines[alias].items).map((key) => {
+        followItems.push({
+          alias,
+          key,
+          value: followTimelines[alias].items[key],
+        });
+      });
+    });
 
-  const timelineSort = (timeline) => {
-    return timeline.sort((a,b) => {return a.datetime -b.datetime});
-  }
-   
+    //add current user timeline
+    Object.entries(items).map((item) =>
+      followItems.push({ alias: currAlias, key: item[0], value: item[1] })
+    );
 
+    followItems.sort((a, b) => {
+      return b["key"] - a["key"];
+    });
+
+    return followItems;
+  };
 
   useEffect(() => {
-    console.log("useEffect de followTimelines", followTimelines)
-  }, [followTimelines])
+    console.log("useEffect de followTimelines", followTimelines);
+  }, [followTimelines]);
 
   useEffect(() => {
     console.log("Start of useEffect()");
@@ -205,6 +222,7 @@ export default function Profile({ gun, user }) {
     gun.get(`~${user.is.pub}`).get("timeline").on(handlerTimeline); // get current messages and sub to updates
     gun.get(`~${user.is.pub}`).get("follows").once(handlerFollowListMessages);
     gun.get(`~${user.is.pub}`).get("follows").on(handlerFollowList);
+    gun.get("users").on(handlerToFollowList);
     return () => {
       ev_own.off();
       ev_followList.off();
@@ -214,89 +232,113 @@ export default function Profile({ gun, user }) {
 
   return (
     <>
-     
-     <Navbar bg="dark" variant="dark">
-
-     <Container className="d-flex justify-content-between">
-     <Navbar.Brand href="#home"><FontAwesomeIcon icon={faDotCircle} />{' '}Dot</Navbar.Brand>
-      <Button onClick={logout} variant="danger">Logout</Button>
-
-    </Container>
-  </Navbar>
-  <div className="container mt-4">
-      <div className="d-flex justify-content-center gap-2" >
-        <div className="col-3 bg-dark p-4 rounded justify-content-between">
+      <Navbar bg="dark" variant="dark">
+        <Container className="d-flex justify-content-between">
+          <Navbar.Brand href="#home">
+            <FontAwesomeIcon icon={faDotCircle} /> Dot
+          </Navbar.Brand>
+          <Button onClick={logout} variant="danger">
+            Logout
+          </Button>
+        </Container>
+      </Navbar>
+      <div className="container mt-4">
+        <div className="d-flex justify-content-center gap-2">
+          <div className="col-3 bg-dark p-4 rounded justify-content-between">
             <h3 className="text-white">@{currAlias}</h3>
             <Button className="mt-2" variant="light">
-              Followed&nbsp;<Badge bg="light text-dark">{followed.length}</Badge>
+              Followed&nbsp;
+              <Badge bg="dark text-light">{Object.keys(followed).length}</Badge>
             </Button>
-        </div>
 
-        <div className="col-6 bg-dark p-4 rounded justify-content-between">
-          <Form>
-            <ButtonGroup className="w-100">
-            <Form.Control
-            ref={timelineInputRef}
-                placeholder="Write what you think..." 
-            />
-
-              <Button variant="primary" onClick={addItem}><FontAwesomeIcon icon={faPaperPlane} /></Button>
-            </ButtonGroup>
-          </Form>
-            <div>
-              {Object.keys(items).map((key) => (
-                <Toast className="w-100 mt-3" key={key}>
-                <ToastHeader 
-                closeButton="true"
-                closeLabel="Close"
+            <ListGroup className="mt-2">
+              {Object.keys(followed).map((key) => (
+                <ListGroup.Item
+                  key={followed[key]}
+                  className="d-flex justify-content-between align-items-center"
                 >
-                  {/* <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" /> */}
-                  <strong className="me-auto">Bootstrap</strong>
-                  <small>{new Date(key*1).toLocaleString('en-US',{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:"numeric", minute:"numeric" })}</small>
-                </ToastHeader>
-                <ToastBody>{items[key]} </ToastBody>
-              
-              </Toast>
+                  {key}
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => deleteFollower(key)}
+                  >
+                    <FontAwesomeIcon icon={faUserTimes} />
+                  </Button>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          </div>
+
+          <div className="col-6 bg-dark p-4 rounded justify-content-between">
+            <Form>
+              <ButtonGroup className="w-100">
+                <Form.Control
+                  ref={timelineInputRef}
+                  placeholder="Write what you think..."
+                />
+
+                <Button variant="primary" onClick={addItem}>
+                  <FontAwesomeIcon icon={faPaperPlane} />
+                </Button>
+              </ButtonGroup>
+            </Form>
+            <div>
+              {organizeFollows(followTimelines).map((entry) => (
+                <Toast
+                  className="w-100 mt-3"
+                  key={entry["key"]}
+                  onClose={() => deleteItem(entry["key"])}
+                >
+                  <ToastHeader
+                    closeButton={currAlias === entry["alias"] ? true : false}
+                    closeLabel="Close"
+                  >
+                    {/* <img src={holder} className="rounded me-2" alt="" /> */}
+                    <strong className="me-auto">{entry["alias"]}</strong>
+                    <small>
+                      {new Date(entry["key"] * 1).toLocaleString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                      })}
+                    </small>
+                  </ToastHeader>
+                  <ToastBody>{entry["value"]} </ToastBody>
+                </Toast>
               ))}
             </div>
-            <ul>
-              {organizeFollows(followTimelines).map((entry) => (
-                <li key={entry.key}>
-                  {entry.alias} : {entry.value} ({entry.key})
-                </li>
-              ))}
-
-            </ul>
           </div>
           <div className="col-3 bg-dark p-4 rounded justify-content-between">
-                <div>
-                    {alert.active ? (
-                      <Alert variant={`${alert.type}`}>{alert.message}</Alert>
-                    ) : null}
-                    <Form>
-                      <ButtonGroup>
-                        <Form.Control ref={followInputRef} />
-                        <Button variant="success" onClick={addFollower}>
-                          <FontAwesomeIcon icon={faUserPlus} />
-                        </Button>
-                      </ButtonGroup>
-                    </Form>
-                    <ul>
-                      {Object.keys(followed).map((key) => (
-                        <li className="text-light" key={followed[key]}>
-                          {key} ({followed[key]})
-                          <Button onClick={() => deleteFollower(key)}>Del</Button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+            <div>
+              {alert.active ? (
+                <Alert variant={`${alert.type}`}>{alert.message}</Alert>
+              ) : null}
+              <ListGroup className="mt-2">
+                {Object.keys(toFollow).map((key) => (
+                  <ListGroup.Item
+                    key={toFollow[key]}
+                    className="d-flex justify-content-between align-items-center"
+                  >
+                    {key}
+                    <Button
+                      size="sm"
+                      variant="success"
+                      onClick={() => addFollower(toFollow)}
+                    >
+                      <FontAwesomeIcon icon={faUserPlus} />
+                    </Button>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </div>
           </div>
-          
         </div>
-
       </div>
-  
     </>
-
   );
 }
+            
