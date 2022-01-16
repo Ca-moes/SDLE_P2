@@ -3,14 +3,18 @@ import { useNavigate } from "react-router";
 
 import Navbar  from "react-bootstrap/Navbar";
 import ButtonGroup from "react-bootstrap/ButtonGroup"
-import Dropdown from "react-bootstrap/Dropdown";
 import Container from "react-bootstrap/Container";
 import Alert from 'react-bootstrap/Alert'
 import Button from 'react-bootstrap/Button';
 import Toast from 'react-bootstrap/Toast'
 import ToastBody from 'react-bootstrap/ToastBody'
 import  ToastHeader  from "react-bootstrap/ToastHeader";
-import { Form } from "react-bootstrap";
+import { Form, Badge } from "react-bootstrap";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUserPlus, faDotCircle, faPaperPlane } from '@fortawesome/free-solid-svg-icons'
+
+
 
 export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
@@ -185,6 +189,11 @@ export default function Profile({ gun, user }) {
     return followItems
   }
 
+  const timelineSort = (timeline) => {
+    return timeline.sort((a,b) => {return a.datetime -b.datetime});
+  }
+   
+
 
   useEffect(() => {
     console.log("useEffect de followTimelines", followTimelines)
@@ -209,47 +218,18 @@ export default function Profile({ gun, user }) {
      <Navbar bg="dark" variant="dark">
 
      <Container className="d-flex justify-content-between">
-     <Navbar.Brand href="#home">DOT</Navbar.Brand>
-      <Dropdown as={ButtonGroup} onSelect={console.log('ola')}>
-        <Button variant="success">{currAlias}</Button>
+     <Navbar.Brand href="#home"><FontAwesomeIcon icon={faDotCircle} />{' '}Dot</Navbar.Brand>
+      <Button onClick={logout} variant="danger">Logout</Button>
 
-        <Dropdown.Toggle split variant="success" id="dropdown-split-basic" />
-
-        <Dropdown.Menu >
-          <Dropdown.Item >About</Dropdown.Item>
-          <Dropdown.Divider/>
-          <Dropdown.Item >Logout</Dropdown.Item>
-        </Dropdown.Menu>
-        </Dropdown>
     </Container>
   </Navbar>
   <div className="container mt-4">
-      <div className="d-flex justify-content-center gap-2">
-      {/* <div>
-        {alert.active ? (
-          <Alert variant={`${alert.type}`}>{alert.message}</Alert>
-        ) : null}
-        <Form>
-          <Form.Group>
-            <Form.Label>Followed</Form.Label>
-            <Form.Control ref={followInputRef} />
-            <Button onClick={addFollower}>Add</Button>
-          </Form.Group>
-        </Form>
-        
-        
-      </div> */}
-      {/* <br /> */}
-      {/* <ul>
-        {Object.keys(followed).map((key) => (
-          <li key={followed[key]}>
-            {key} ({followed[key]})
-            <Button onClick={() => deleteFollower(key)}>Del</Button>
-          </li>
-        ))}
-      </ul> */}
+      <div className="d-flex justify-content-center gap-2" >
         <div className="col-3 bg-dark p-4 rounded justify-content-between">
-
+            <h3 className="text-white">@{currAlias}</h3>
+            <Button className="mt-2" variant="light">
+              Followed&nbsp;<Badge bg="light text-dark">{followed.length}</Badge>
+            </Button>
         </div>
 
         <div className="col-6 bg-dark p-4 rounded justify-content-between">
@@ -260,25 +240,25 @@ export default function Profile({ gun, user }) {
                 placeholder="Write what you think..." 
             />
 
-              <Button onClick={addItem}>Add</Button>
+              <Button variant="primary" onClick={addItem}><FontAwesomeIcon icon={faPaperPlane} /></Button>
             </ButtonGroup>
           </Form>
-            <ul>
+            <div>
               {Object.keys(items).map((key) => (
-                <Toast key={key}>
+                <Toast className="w-100 mt-3" key={key}>
                 <ToastHeader 
                 closeButton="true"
                 closeLabel="Close"
                 >
                   {/* <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" /> */}
                   <strong className="me-auto">Bootstrap</strong>
-                  <small>{key}</small>
+                  <small>{new Date(key*1).toLocaleString('en-US',{ weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:"numeric", minute:"numeric" })}</small>
                 </ToastHeader>
                 <ToastBody>{items[key]} </ToastBody>
               
               </Toast>
               ))}
-            </ul>
+            </div>
             <ul>
               {organizeFollows(followTimelines).map((entry) => (
                 <li key={entry.key}>
@@ -289,8 +269,28 @@ export default function Profile({ gun, user }) {
             </ul>
           </div>
           <div className="col-3 bg-dark p-4 rounded justify-content-between">
-          
-        </div>
+                <div>
+                    {alert.active ? (
+                      <Alert variant={`${alert.type}`}>{alert.message}</Alert>
+                    ) : null}
+                    <Form>
+                      <ButtonGroup>
+                        <Form.Control ref={followInputRef} />
+                        <Button variant="success" onClick={addFollower}>
+                          <FontAwesomeIcon icon={faUserPlus} />
+                        </Button>
+                      </ButtonGroup>
+                    </Form>
+                    <ul>
+                      {Object.keys(followed).map((key) => (
+                        <li className="text-light" key={followed[key]}>
+                          {key} ({followed[key]})
+                          <Button onClick={() => deleteFollower(key)}>Del</Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+          </div>
           
         </div>
 
