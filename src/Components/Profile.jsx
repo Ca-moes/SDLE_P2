@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 
+import Navbar  from "react-bootstrap/Navbar";
+import ButtonGroup from "react-bootstrap/ButtonGroup"
+import Dropdown from "react-bootstrap/Dropdown";
+import Container from "react-bootstrap/Container";
 import Alert from 'react-bootstrap/Alert'
 import Button from 'react-bootstrap/Button';
+import Toast from 'react-bootstrap/Toast'
+import ToastBody from 'react-bootstrap/ToastBody'
+import  ToastHeader  from "react-bootstrap/ToastHeader";
+import { Form } from "react-bootstrap";
 
 export default function Profile({ gun, user }) {
   const [currAlias, setCurrAlias] = useState("");
@@ -197,40 +205,78 @@ export default function Profile({ gun, user }) {
 
   return (
     <>
-      <h1>Hello {currAlias}</h1>
+     
+     <Navbar bg="dark" variant="dark">
 
-      <div>
+     <Container className="d-flex justify-content-between">
+     <Navbar.Brand href="#home">DOT</Navbar.Brand>
+      <Dropdown as={ButtonGroup} onSelect={console.log('ola')}>
+        <Button variant="success">{currAlias}</Button>
+
+        <Dropdown.Toggle split variant="success" id="dropdown-split-basic" />
+
+        <Dropdown.Menu >
+          <Dropdown.Item >About</Dropdown.Item>
+          <Dropdown.Divider/>
+          <Dropdown.Item >Logout</Dropdown.Item>
+        </Dropdown.Menu>
+        </Dropdown>
+    </Container>
+  </Navbar>
+  <div className="container mt-4">
+      <div className="d-flex justify-content-center gap-2">
+      {/* <div>
         {alert.active ? (
           <Alert variant={`${alert.type}`}>{alert.message}</Alert>
         ) : null}
-        <label>Followed</label>
-        <input ref={followInputRef} />
-        <Button onClick={addFollower}>Add</Button>
-      </div>
-      <br />
-      <ul>
+        <Form>
+          <Form.Group>
+            <Form.Label>Followed</Form.Label>
+            <Form.Control ref={followInputRef} />
+            <Button onClick={addFollower}>Add</Button>
+          </Form.Group>
+        </Form>
+        
+        
+      </div> */}
+      {/* <br /> */}
+      {/* <ul>
         {Object.keys(followed).map((key) => (
           <li key={followed[key]}>
             {key} ({followed[key]})
             <Button onClick={() => deleteFollower(key)}>Del</Button>
           </li>
         ))}
-      </ul>
+      </ul> */}
+        <div className="col-3 bg-dark p-4 rounded justify-content-between">
 
-      <div className="container mt-4">
-        <h1>Items list</h1>
-        <div className="d-flex flex-row justify-content-between align-items-start">
-          <div>
-            <div>
-              <input ref={timelineInputRef} />
+        </div>
+
+        <div className="col-6 bg-dark p-4 rounded justify-content-between">
+          <Form>
+            <ButtonGroup className="w-100">
+            <Form.Control
+            ref={timelineInputRef}
+                placeholder="Write what you think..." 
+            />
+
               <Button onClick={addItem}>Add</Button>
-            </div>
+            </ButtonGroup>
+          </Form>
             <ul>
               {Object.keys(items).map((key) => (
-                <li key={key}>
-                  {items[key]} ({key})
-                  <Button onClick={() => deleteItem(key)}>Del</Button>
-                </li>
+                <Toast key={key}>
+                <ToastHeader 
+                closeButton="true"
+                closeLabel="Close"
+                >
+                  {/* <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" /> */}
+                  <strong className="me-auto">Bootstrap</strong>
+                  <small>{key}</small>
+                </ToastHeader>
+                <ToastBody>{items[key]} </ToastBody>
+              
+              </Toast>
               ))}
             </ul>
             <ul>
@@ -242,11 +288,15 @@ export default function Profile({ gun, user }) {
 
             </ul>
           </div>
-          <Button variant="danger" onClick={logout}>
-            Logout
-          </Button>
+          <div className="col-3 bg-dark p-4 rounded justify-content-between">
+          
         </div>
+          
+        </div>
+
       </div>
+  
     </>
+
   );
 }

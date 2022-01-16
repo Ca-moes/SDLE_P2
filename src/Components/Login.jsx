@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import Form from 'react-bootstrap/Form';
 import Alert from 'react-bootstrap/Alert'
@@ -8,13 +8,13 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router";
 
 export default function Login({ user }) {
-  const [alias, setAlias] = useState("");
-  const [password, setPassword] = useState("");
+  const alias = React.createRef();
+  const password = React.createRef();
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
   const navigate = useNavigate();
 
   const login = () => {
-    user.auth(alias, password, (ack) => {
+    user.auth(alias.current.value, password.current.value, (ack) => {
       if ("err" in ack) {
         setAlert({ active: true, message: ack.err, type: "danger" });
       } else {
@@ -30,7 +30,8 @@ export default function Login({ user }) {
   }, [])
 
   return (
-    <div className="container mt-4">
+    <div className="w-100 min-h-vh d-flex jusitify-content-center align-items-center">
+      <div className="m-auto col-sm-10 col-md-4 col-xl-3">
       <h1>Login</h1>
       {alert.active ? (
         <Alert variant={`${alert.type}`}>{alert.message}</Alert>
@@ -40,7 +41,7 @@ export default function Login({ user }) {
           <Form.Label for="exampleEmail">Username</Form.Label>
           <Form.Control
             id="alias"
-            onChange={(input) => setAlias(input.target.value)}
+            ref={alias}
             placeholder="username"
             name="alias"
             type="text"
@@ -50,7 +51,7 @@ export default function Login({ user }) {
           <Form.Label for="examplePassword">Password</Form.Label>
           <Form.Control
             id="pass"
-            onChange={(input) => setPassword(input.target.value)}
+            ref={password}
             type="password"
             placeholder="passphrase"
             name="password"
@@ -61,6 +62,9 @@ export default function Login({ user }) {
           Sign Up
         </Link>
       </Form>
+    </div>
+      
+    
     </div>
   );
 }
