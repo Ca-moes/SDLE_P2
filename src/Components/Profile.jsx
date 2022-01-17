@@ -163,13 +163,15 @@ export default function Profile({ gun, user }) {
     e.preventDefault();
     const value = timelineInputRef.current.value;
 
-    if (value != "") {
+    if (value != "" && newItemCounter <=150) {
       const time = Date.now();
       gun.get(`~${user.is.pub}`).get("timeline").get(time).put(value);
       timelineInputRef.current.value = "";
+
+      setNewItemCounter(0);
     }
 
-    setNewItemCounter(0);
+    
   };
 
   const deleteItem = (time) => {
@@ -288,7 +290,7 @@ export default function Profile({ gun, user }) {
                   <FontAwesomeIcon icon={faPaperPlane} />
                 </Button>
               </ButtonGroup>
-              <span className="text-secondary mt-4">{newItemCounter}/150</span>
+              <span className={`${newItemCounter>150?'text-danger':'text-secondary'} mt-4 `}>{newItemCounter}/150</span>
             </Form>
             <div>
               {organizeFollows().map((entry) => (
