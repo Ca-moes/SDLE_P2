@@ -32,15 +32,13 @@ export default function Login({ user, gun }) {
       if ("err" in ack) {
         setAlert({ active: true, message: ack.err, type: "danger" });
       } else if (ack.ok === 0) {
+        gun.get("users").get(alias.current.value).put(ack.pub);
+
         setAlert({
           active: true,
           message: "User created sucessfully!",
           type: "success",
         });
-
-        gun.get("users").get(alias.current.value).put(ack.pub);
-
-        login();
       } else {
         console.error("Something went wrong in user.create()");
       }
