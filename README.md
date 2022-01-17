@@ -9,16 +9,24 @@ Group members:
 3. Luís Marques (up201104354@edu.fe.up.pt)
 4. Rodrigo Reis (up201806534@edu.fe.up.pt)
 
+## Installing
+
+Requirements (Both of the requirements can be obtained via `nvm`):
+
+- npm v8.1.2
+- Node v16.13.1
+
+After this, clone the project and run `npm install` on the root folder to download the dependencies. Once that is finished, run `npm start` and the app should be available in `http://localhost:3000` and connected to a relay served hosted on `heroku`.
+
 ## Developing
 
 `npm start` Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-Gun Stores its data in the [browser Local Storage](https://ui.vision/howto/view-local-storage), in the file specified in the Gun constructor.
+Gun Stores its data in the [browser Local Storage](https://ui.vision/howto/view-local-storage).
 
-This data can be passed to `./src/Assets/gun_data.json` before a commit to share the state of a node. To retrive the state, this data needs to be copied manually into the browser Local Storage.
 
-## Running
+## Running with local server
 
 Run relay server with `npm run server [port]`. The port is not necessary, defaulting to 8765 if not present.
 
