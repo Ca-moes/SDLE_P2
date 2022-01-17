@@ -10,7 +10,7 @@ import Toast from "react-bootstrap/Toast";
 import ToastBody from "react-bootstrap/ToastBody";
 import ToastHeader from "react-bootstrap/ToastHeader";
 import { Form, Badge, ListGroup } from "react-bootstrap";
-import holder from '../../src/Assets/holder.svg'
+import holder from "../../src/Assets/holder.svg";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -28,6 +28,7 @@ export default function Profile({ gun, user }) {
   const [followTimelines, setFollowTimelines] = useState({}); // {alias : { ev: _ev, items: {1234: 'item1', 5678: 'item2'}}}
   const followTimelinesRef = useRef();
   const [alert, setAlert] = useState({ active: false, message: "", type: "" });
+  const [newItemCounter, setNewItemCounter] = useState(0);
 
   const timelineInputRef = useRef();
   const followInputRef = useRef();
@@ -36,27 +37,28 @@ export default function Profile({ gun, user }) {
 
   let ev_own = null;
   let ev_followList = null;
+  let ev_toFollowList = null;
   followTimelinesRef.current = followTimelines;
 
-  const handlerToFollowList = (ack) => {
+  const handlerToFollowList = (value, key, _msg, _ev) => {
     let toFollowList = {};
+    ev_toFollowList = _ev;
 
-    Object.entries(ack)
-      .filter(
-        (item) =>
-          item[0] !== "_" && item[1] !== user.is.pub && !(item[0] in followed)
+    Object.entries(value).forEach((item) => {
+      if (
+        item[1] !== null &&
+        item[0] !== "_" &&
+        item[1] !== user.is.pub &&
+        !(item[0] in followed)
       )
-      .forEach((item) => {
-        if (item[1] !== null) toFollowList[item[0]] = item[1];
-      });
+        toFollowList[item[0]] = item[1];
+    });
 
-    console.log("to", toFollowList);
 
     setToFollow(toFollowList);
   };
 
   const handlerFollowList = (value, key, _msg, _ev) => {
-    console.log("Em callback handlerFollowList");
     ev_followList = _ev;
     let followList = {};
     let valueCopy = { ...value };
@@ -70,7 +72,6 @@ export default function Profile({ gun, user }) {
 
   // Adds subscriptions at beginning
   const handlerFollowListMessages = (value) => {
-    console.log("Em callback handlerFollowListMessages", value);
     if (value === undefined) return;
 
     let followList = {};
@@ -80,17 +81,12 @@ export default function Profile({ gun, user }) {
         if (item[1] !== null) followList[item[0]] = item[1];
       });
 
-    // With once, might not need to use ref
-    console.log("followList:", followList);
-
     // Adds a subscription if new alias appears in followList
     for (let alias in followList) {
-      console.log("Criou subscribe para:", alias);
       gun
         .get(`~${followList[alias]}`)
         .get("timeline")
         .on((value, key, _msg, _ev) => {
-          console.log("Value em sub", value);
           let new_items = {};
           Object.entries(value)
             .filter((item) => item[0] !== "_")
@@ -134,20 +130,19 @@ export default function Profile({ gun, user }) {
           .get(`~${ack.put}`)
           .get("timeline")
           .on((value, key, _msg, _ev) => {
-            console.log("Value em sub???", value);
             let new_items = {};
-            console.log("Value em sub 2", value);
+
             Object.entries(value)
               .filter((item) => item[0] !== "_")
               .forEach((item) => {
                 if (item[1] !== null) new_items[item[0]] = item[1];
               });
-            console.log("alive?");
+
             let newFollowTimelines = {
               ...followTimelinesRef.current,
               [alias]: { ev: _ev, items: new_items },
             };
-            console.log("setFollowTimelines com ", newFollowTimelines);
+
             setFollowTimelines(newFollowTimelines);
           });
       }
@@ -163,7 +158,9 @@ export default function Profile({ gun, user }) {
     setFollowTimelines(tempState);
   };
 
-  const addItem = () => {
+  const addItem = (e) => {
+
+    e.preventDefault();
     const value = timelineInputRef.current.value;
 
     if (value != "") {
@@ -171,10 +168,11 @@ export default function Profile({ gun, user }) {
       gun.get(`~${user.is.pub}`).get("timeline").get(time).put(value);
       timelineInputRef.current.value = "";
     }
+
+    setNewItemCounter(0);
   };
 
   const deleteItem = (time) => {
-    console.log("apagar", time);
     gun.get(`~${user.is.pub}`).get("timeline").get(time).put(null);
   };
 
@@ -188,7 +186,7 @@ export default function Profile({ gun, user }) {
     return navigate("/");
   };
 
-  const organizeFollows = (timelines) => {
+  const organizeFollows = () => {
     let followItems = [];
     Object.keys(followTimelines).map((alias) => {
       Object.keys(followTimelines[alias].items).map((key) => {
@@ -212,12 +210,19 @@ export default function Profile({ gun, user }) {
     return followItems;
   };
 
-  useEffect(() => {
-    console.log("useEffect de followTimelines", followTimelines);
-  }, [followTimelines]);
+  const organizeToFollow = (newFollowed, newToFollow) => {
+    let toFollowItems = [];
+
+    Object.keys(newToFollow).forEach((alias) => {
+      if(!(alias in Object.keys(newFollowed))){
+        toFollowItems.push(alias)
+      }
+    })
+    console.log(newFollowed, newToFollow)
+    return toFollowItems;
+  }
 
   useEffect(() => {
-    console.log("Start of useEffect()");
     gun.user().once((data) => setCurrAlias(data.alias));
     gun.get(`~${user.is.pub}`).get("timeline").on(handlerTimeline); // get current messages and sub to updates
     gun.get(`~${user.is.pub}`).get("follows").once(handlerFollowListMessages);
@@ -226,6 +231,7 @@ export default function Profile({ gun, user }) {
     return () => {
       ev_own.off();
       ev_followList.off();
+      ev_toFollowList.off();
       Object.values(followTimelines).forEach((item) => item.ev.off());
     };
   }, []);
@@ -234,8 +240,8 @@ export default function Profile({ gun, user }) {
     <>
       <Navbar bg="dark" variant="dark">
         <Container className="d-flex justify-content-between">
-          <Navbar.Brand href="#home">
-            <FontAwesomeIcon icon={faDotCircle} /> Dot
+          <Navbar.Brand href="/">
+            <h1><FontAwesomeIcon icon={faDotCircle} /> Dot</h1>
           </Navbar.Brand>
           <Button onClick={logout} variant="danger">
             Logout
@@ -243,7 +249,7 @@ export default function Profile({ gun, user }) {
         </Container>
       </Navbar>
       <div className="container mt-4">
-        <div className="d-flex justify-content-center gap-2">
+        <div className="h-100 d-flex justify-content-center gap-2">
           <div className="col-3 bg-dark p-4 rounded justify-content-between">
             <h3 className="text-white">@{currAlias}</h3>
             <Button className="mt-2" variant="light">
@@ -271,20 +277,21 @@ export default function Profile({ gun, user }) {
           </div>
 
           <div className="col-6 bg-dark p-4 rounded justify-content-between">
-            <Form>
+            <Form onSubmit={addItem}>
               <ButtonGroup className="w-100">
                 <Form.Control
                   ref={timelineInputRef}
                   placeholder="Write what you think..."
+                  onChange={()=>setNewItemCounter(timelineInputRef.current.value.length)}
                 />
-
-                <Button variant="primary" onClick={addItem}>
+                <Button variant="primary" type="submit">
                   <FontAwesomeIcon icon={faPaperPlane} />
                 </Button>
               </ButtonGroup>
+              <span className="text-secondary mt-4">{newItemCounter}/150</span>
             </Form>
             <div>
-              {organizeFollows(followTimelines).map((entry) => (
+              {organizeFollows().map((entry) => (
                 <Toast
                   className="w-100 mt-3"
                   key={entry["key"]}
@@ -318,21 +325,22 @@ export default function Profile({ gun, user }) {
                 <Alert variant={`${alert.type}`}>{alert.message}</Alert>
               ) : null}
               <ListGroup className="mt-2">
-                {Object.keys(toFollow).map((key) => (
+                {organizeToFollow(followed, toFollow).map((key) => 
                   <ListGroup.Item
-                    key={toFollow[key]}
-                    className="d-flex justify-content-between align-items-center"
-                  >
-                    {key}
-                    <Button
-                      size="sm"
-                      variant="success"
-                      onClick={() => addFollower(toFollow)}
+                      key={key}
+                      className="d-flex justify-content-between align-items-center"
                     >
-                      <FontAwesomeIcon icon={faUserPlus} />
-                    </Button>
-                  </ListGroup.Item>
-                ))}
+                      {key}
+                      <Button
+                        size="sm"
+                        variant="success"
+                        onClick={() => addFollower(key)}
+                      >
+                        <FontAwesomeIcon icon={faUserPlus} />
+                      </Button>
+                    </ListGroup.Item>
+                  
+                )}
               </ListGroup>
             </div>
           </div>
@@ -341,4 +349,3 @@ export default function Profile({ gun, user }) {
     </>
   );
 }
-            

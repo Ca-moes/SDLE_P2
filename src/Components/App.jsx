@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from './Login';
-import SignUp from './SignUp';
 import Profile from './Profile';
 
 
@@ -24,7 +23,6 @@ class App extends Component {
       <Routes>
         <Route>
           <Route index element={<Login gun={this.gun} user={this.user}/>} />
-          <Route path="/signup" element={<SignUp gun={this.gun} user={this.user}/>} />
           <Route path="/profile" element={<Profile gun={this.gun} user={this.user}/>} />
         </Route>
       </Routes>
