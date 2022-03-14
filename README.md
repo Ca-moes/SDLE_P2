@@ -35,3 +35,7 @@ Run relay server with `npm run server [port]`. The port is not necessary, defaul
 - `sessionStorage.clear(); localStorage.clear();` on peers
 - close peers browser windows
 - `npm run serverclean`
+
+## Demo
+
+A demonstration is available here [here](https://youtu.be/xwWr8N6CaYM)
